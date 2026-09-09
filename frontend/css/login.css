@@ -1,0 +1,94 @@
+/* ============================================
+   Login Page
+   ============================================ */
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+        linear-gradient(180deg, var(--gray-50) 0%, #f0f4ff 100%);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0,0,0,0.02);
+    padding: var(--space-10);
+    animation: fadeUp 0.5s var(--ease-out);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.login-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+    color: #fff;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.login-header h1 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.login-header p {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+}
+
+/* Login Tabs */
+.login-tabs {
+    display: flex;
+    gap: var(--space-1);
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    margin-bottom: var(--space-6);
+}
+
+.login-tab {
+    flex: 1;
+    padding: var(--space-2) var(--space-4);
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.login-tab.active {
+    background: #fff;
+    color: var(--gray-900);
+    box-shadow: var(--shadow-sm);
+}
+
+.login-tab:hover:not(.active) {
+    color: var(--gray-700);
+}
+
+/* Login Forms */
+.login-form { display: none; }
+.login-form.active { display: block; }

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CP_AI · 智能分析平台</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/login.css">
+  <link rel="stylesheet" href="/static/css/rag.css">
+  <link rel="stylesheet" href="/static/css/agent.css">
+  <link rel="stylesheet" href="/static/css/skill.css">
+  <link rel="stylesheet" href="/static/css/mcp.css">
+</head>
+<body>
+  <div id="page-login" class="page active">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">CP</div>
+          <h1>CP_AI</h1>
+          <p>智能分析平台</p>
+        </div>
+        <div class="login-tabs">
+          <button class="login-tab active" data-panel="login">登录</button>
+          <button class="login-tab" data-panel="register">注册</button>
+        </div>
+        <form id="form-login" class="login-form active" data-panel="login">
+          <div class="field">
+            <label for="login-username">用户名 / 邮箱</label>
+            <input type="text" id="login-username" required autocomplete="username" placeholder="请输入用户名或邮箱">
+          </div>
+          <div class="field">
+            <label for="login-password">密码</label>
+            <input type="password" id="login-password" required autocomplete="current-password" placeholder="请输入密码">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-login">登录</button>
+          <div id="login-msg" class="msg hidden"></div>
+        </form>
+        <form id="form-register" class="login-form" data-panel="register">
+          <div class="field">
+            <label for="reg-username">用户名 <span class="required">*</span></label>
+            <input type="text" id="reg-username" required autocomplete="username" placeholder="请输入用户名">
+          </div>
+          <div class="field">
+            <label for="reg-password">密码 <span class="required">*</span></label>
+            <input type="password" id="reg-password" required autocomplete="new-password" placeholder="请输入密码">
+          </div>
+          <div class="field">
+            <label for="reg-email">邮箱</label>
+            <input type="email" id="reg-email" autocomplete="email" placeholder="请输入邮箱（可选）">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-register">注册</button>
+          <div id="register-msg" class="msg hidden"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-main" class="page">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <div class="brand-logo">CP</div>
+        <span class="brand-text">CP_AI</span>
+      </div>
+      <div class="navbar-user">
+        <span id="display-username" class="user-name"></span>
+        <button id="btn-logout" class="btn btn-ghost btn-sm">退出</button>
+      </div>
+    </nav>
+
+    <div id="view-home" class="view active">
+      <div class="content-wrapper">
+        <div class="page-header">
+          <h2>功能中心</h2>
+          <p>选择一个功能开始使用</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-card" data-feature="rag">
+            <div class="feature-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+              </svg>
+            </div>
+            <h3>RAG 语义查询</h3>
+            <p>基于向量索引的语义检索，上传文档后进行智能问答</p>
+            <span class="feature-arrow">&rarr;</span>
+          </div>
+          <div class="feature-card" data-feature="agent">
+            <div class="feature-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <h3>Agent 对话</h3>
+            <p>多轮对话 AI 助手，支持上下文记忆和会话管理</p>
+            <span class="feature-arrow">&rarr;</span>
+          </div>
+          <div class="feature-card" data-feature="skill">
+            <div class="feature-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
+            </div>
+            <h3>技能搜索</h3>
+            <p>搜索 SkillsMP 平台技能，发现和安装实用工具</p>
+            <span class="feature-arrow">&rarr;</span>
+          </div>
+          <div class="feature-card" data-feature="mcp">
+            <div class="feature-icon feature-icon-mcp">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </div>
+            <h3>MCP 市场</h3>
+            <p>浏览 ModelScope MCP 服务，发现可用的模型上下文协议工具</p>
+            <span class="feature-arrow">&rarr;</span>
+          </div>
+          <div class="feature-card feature-disabled">
+            <div class="feature-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+            </div>
+            <h3>更多功能</h3>
+            <p>敬请期待</p>
+            <span class="feature-badge">即将推出</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-rag" class="view">
+      <div class="content-wrapper">
+        <div class="view-header">
+          <button class="btn-back" id="btn-back-rag">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回
+          </button>
+          <h2>RAG 语义查询</h2>
+        </div>
+        <div class="rag-layout">
+          <div class="panel">
+            <h3 class="panel-title">文档入库</h3>
+            <div class="ingest-upload">
+              <label for="ingest-files" class="ingest-dropzone" id="ingest-dropzone">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>点击选择或拖拽 MD 文件</span>
+                <span class="ingest-hint">支持多文件，仅 .md 格式</span>
+              </label>
+              <input type="file" id="ingest-files" accept=".md" multiple hidden>
+              <div id="ingest-file-list" class="ingest-file-list hidden"></div>
+              <button type="button" class="btn btn-primary" id="btn-ingest" disabled>入库</button>
+            </div>
+            <div id="ingest-result" class="msg hidden"></div>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">
+              我的文档
+              <button id="btn-refresh-docs" class="btn btn-outline btn-sm" style="margin-left:auto">刷新</button>
+            </h3>
+            <div id="rag-doc-list" class="rag-doc-list">
+              <div class="rag-doc-empty">暂无文档，请上传</div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">查询</h3>
+            <form id="form-query">
+              <div class="rag-mode-toggle">
+                <label class="rag-mode-option">
+                  <input type="radio" name="rag-mode" value="retrieve" checked>
+                  <span>纯检索</span>
+                </label>
+                <label class="rag-mode-option">
+                  <input type="radio" name="rag-mode" value="query">
+                  <span>生成</span>
+                </label>
+                <label class="rag-mode-option">
+                  <input type="radio" name="rag-mode" value="query_eval">
+                  <span>生成+评估</span>
+                </label>
+              </div>
+              <div class="rag-eval-options hidden" id="rag-eval-options">
+                <label class="field-label">评估指标</label>
+                <div class="rag-metric-checks">
+                  <label class="rag-metric-check">
+                    <input type="checkbox" name="rag-metric" value="faithfulness" checked>
+                    <span>忠实度</span>
+                  </label>
+                  <label class="rag-metric-check">
+                    <input type="checkbox" name="rag-metric" value="answer_relevancy">
+                    <span>答案相关性</span>
+                  </label>
+                  <label class="rag-metric-check">
+                    <input type="checkbox" name="rag-metric" value="context_precision">
+                    <span>上下文精确率</span>
+                  </label>
+                  <label class="rag-metric-check">
+                    <input type="checkbox" name="rag-metric" value="context_recall">
+                    <span>上下文召回率</span>
+                  </label>
+                </div>
+                <div class="rag-reference-field hidden" id="rag-reference-wrap">
+                  <label for="query-reference">标准答案 <span class="text-tertiary">（上下文精确率/召回率需要）</span></label>
+                  <textarea id="query-reference" rows="2" placeholder="输入标准参考答案..."></textarea>
+                </div>
+              </div>
+              <div class="field">
+                <label for="query-text">查询内容</label>
+                <textarea id="query-text" rows="4" required placeholder="输入你想查询的问题..."></textarea>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="query-topk">返回数量</label>
+                  <input type="number" id="query-topk" value="5" min="1" max="50">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" id="btn-query">检索</button>
+            </form>
+          </div>
+          <div class="rag-results-area" id="rag-results-area">
+            <div class="rag-results-empty" id="query-empty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <p>输入问题并点击检索</p>
+            </div>
+            <div class="rag-result-panel hidden" id="rag-answer-panel">
+              <h3 class="panel-title">生成回答</h3>
+              <div id="rag-answer-content" class="rag-answer-content"></div>
+            </div>
+            <div class="rag-result-panel hidden" id="rag-context-panel">
+              <h3 class="panel-title">检索来源 <span id="rag-context-count" class="badge"></span></h3>
+              <div id="rag-context-list" class="rag-context-list"></div>
+            </div>
+            <div class="rag-result-panel hidden" id="rag-ragas-panel">
+              <h3 class="panel-title">RAGAS 评估</h3>
+              <div class="ragas-scores" id="ragas-scores-inline">
+                <div class="ragas-grid">
+                  <div class="ragas-item" data-metric="faithfulness">
+                    <span class="ragas-label">忠实度</span>
+                    <div class="ragas-bar"><div class="ragas-fill" id="ragas-faithfulness"></div></div>
+                    <span class="ragas-value" id="ragas-faithfulness-val">-</span>
+                  </div>
+                  <div class="ragas-item" data-metric="answer_relevancy">
+                    <span class="ragas-label">答案相关性</span>
+                    <div class="ragas-bar"><div class="ragas-fill" id="ragas-answer-relevancy"></div></div>
+                    <span class="ragas-value" id="ragas-answer-relevancy-val">-</span>
+                  </div>
+                  <div class="ragas-item" data-metric="context_precision">
+                    <span class="ragas-label">上下文精确率</span>
+                    <div class="ragas-bar"><div class="ragas-fill" id="ragas-context-precision"></div></div>
+                    <span class="ragas-value" id="ragas-context-precision-val">-</span>
+                  </div>
+                  <div class="ragas-item" data-metric="context_recall">
+                    <span class="ragas-label">上下文召回率</span>
+                    <div class="ragas-bar"><div class="ragas-fill" id="ragas-context-recall"></div></div>
+                    <span class="ragas-value" id="ragas-context-recall-val">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-compact">
+            <div class="status-row">
+              <span class="status-label">RAG 服务状态</span>
+              <button id="btn-rag-health" class="btn btn-outline btn-sm">检查</button>
+            </div>
+            <div id="rag-health-result" class="msg hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-agent" class="view">
+      <div class="agent-layout">
+        <div class="agent-sidebar">
+          <div class="sidebar-header">
+            <h3>会话</h3>
+            <button id="btn-new-session" class="btn btn-primary btn-sm">+ 新建</button>
+          </div>
+          <div id="session-list" class="session-list"></div>
+        </div>
+        <div class="agent-main">
+          <div class="agent-view-header">
+            <button class="btn-back" id="btn-back-agent">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              返回
+            </button>
+            <h2>Agent 对话</h2>
+          </div>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-toolbar">
+            <label class="chat-skill-label">技能：</label>
+            <select id="chat-skill-select" class="chat-skill-select">
+              <option value="">无（默认）</option>
+            </select>
+            <span id="chat-skill-status" class="chat-skill-status"></span>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chat-input" placeholder="输入消息..." rows="1"></textarea>
+            <button id="btn-send" class="btn btn-primary">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-skill" class="view">
+      <div class="content-wrapper">
+        <div class="view-header">
+          <button class="btn-back" id="btn-back-skill">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回
+          </button>
+          <h2>技能管理</h2>
+        </div>
+        <div class="skill-tabs">
+          <button class="skill-tab active" data-tab="search">搜索技能</button>
+          <button class="skill-tab" data-tab="my">我的技能</button>
+        </div>
+
+        <div id="skill-tab-search" class="skill-tab-content active">
+          <div class="skill-layout">
+            <div class="panel">
+              <h3 class="panel-title">搜索</h3>
+              <form id="form-skill-search">
+                <div class="field">
+                  <label for="skill-query">搜索关键词</label>
+                  <input type="text" id="skill-query" required placeholder="输入技能名称或关键词...">
+                </div>
+                <div class="field">
+                  <label for="skill-category">分类</label>
+                  <select id="skill-category">
+                    <option value="">全部分类</option>
+                    <optgroup label="区块链 / Web3">
+                      <option value="blockchain">blockchain</option>
+                      <option value="defi">defi</option>
+                      <option value="smart-contracts">smart-contracts</option>
+                      <option value="web3-tools">web3-tools</option>
+                    </optgroup>
+                    <optgroup label="商业 / 应用">
+                      <option value="business-apps">business-apps</option>
+                      <option value="ecommerce">ecommerce</option>
+                      <option value="finance-investment">finance-investment</option>
+                      <option value="health-fitness">health-fitness</option>
+                      <option value="payment">payment</option>
+                      <option value="project-management">project-management</option>
+                      <option value="real-estate-legal">real-estate-legal</option>
+                      <option value="sales-marketing">sales-marketing</option>
+                    </optgroup>
+                    <optgroup label="内容 / 媒体">
+                      <option value="content-creation">content-creation</option>
+                      <option value="design">design</option>
+                      <option value="documents">documents</option>
+                      <option value="media">media</option>
+                    </optgroup>
+                    <optgroup label="数据 / AI">
+                      <option value="data-analysis">data-analysis</option>
+                      <option value="data-engineering">data-engineering</option>
+                      <option value="llm-ai">llm-ai</option>
+                      <option value="machine-learning">machine-learning</option>
+                    </optgroup>
+                    <optgroup label="数据库">
+                      <option value="database-tools">database-tools</option>
+                      <option value="nosql-databases">nosql-databases</option>
+                      <option value="sql-databases">sql-databases</option>
+                    </optgroup>
+                    <optgroup label="开发">
+                      <option value="architecture-patterns">architecture-patterns</option>
+                      <option value="backend">backend</option>
+                      <option value="cms-platforms">cms-platforms</option>
+                      <option value="ecommerce-development">ecommerce-development</option>
+                      <option value="framework-internals">framework-internals</option>
+                      <option value="frontend">frontend</option>
+                      <option value="full-stack">full-stack</option>
+                      <option value="gaming">gaming</option>
+                      <option value="mobile">mobile</option>
+                      <option value="package-distribution">package-distribution</option>
+                      <option value="scripting">scripting</option>
+                    </optgroup>
+                    <optgroup label="DevOps / 运维">
+                      <option value="cicd">cicd</option>
+                      <option value="cloud">cloud</option>
+                      <option value="containers">containers</option>
+                      <option value="git-workflows">git-workflows</option>
+                      <option value="monitoring">monitoring</option>
+                    </optgroup>
+                    <optgroup label="文档 / 教育">
+                      <option value="education">education</option>
+                      <option value="knowledge-base">knowledge-base</option>
+                      <option value="technical-docs">technical-docs</option>
+                    </optgroup>
+                    <optgroup label="生活 / 人文">
+                      <option value="arts-crafts">arts-crafts</option>
+                      <option value="culinary-arts">culinary-arts</option>
+                      <option value="divination-mysticism">divination-mysticism</option>
+                      <option value="literature-writing">literature-writing</option>
+                      <option value="philosophy-ethics">philosophy-ethics</option>
+                      <option value="wellness-health">wellness-health</option>
+                    </optgroup>
+                    <optgroup label="科研 / 学术">
+                      <option value="academic">academic</option>
+                      <option value="astronomy-physics">astronomy-physics</option>
+                      <option value="bioinformatics">bioinformatics</option>
+                      <option value="computational-chemistry">computational-chemistry</option>
+                      <option value="lab-tools">lab-tools</option>
+                      <option value="scientific-computing">scientific-computing</option>
+                    </optgroup>
+                    <optgroup label="测试 / 安全">
+                      <option value="code-quality">code-quality</option>
+                      <option value="security">security</option>
+                      <option value="testing">testing</option>
+                    </optgroup>
+                    <optgroup label="工具 / 效率">
+                      <option value="automation-tools">automation-tools</option>
+                      <option value="cli-tools">cli-tools</option>
+                      <option value="debugging">debugging</option>
+                      <option value="domain-utilities">domain-utilities</option>
+                      <option value="ide-plugins">ide-plugins</option>
+                      <option value="productivity-tools">productivity-tools</option>
+                      <option value="system-admin">system-admin</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="skill-language">语言</label>
+                    <select id="skill-language">
+                      <option value="">全部语言</option>
+                      <option value="en">English</option>
+                      <option value="zh">中文</option>
+                      <option value="ja">日本語</option>
+                      <option value="mul">混合语言 (mul)</option>
+                      <option value="und">无法确定 (und)</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="skill-limit">数量</label>
+                    <input type="number" id="skill-limit" value="20" min="1" max="50">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-skill-search">搜索</button>
+              </form>
+            </div>
+            <div class="panel">
+              <h3 class="panel-title">结果</h3>
+              <div id="skill-result" class="skill-results hidden"></div>
+              <div id="skill-empty" class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <p>输入关键词并点击搜索</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="skill-tab-my" class="skill-tab-content">
+          <div class="skill-layout">
+            <div class="panel">
+              <h3 class="panel-title">上传技能</h3>
+              <form id="form-skill-upload">
+                <div class="field">
+                  <label for="upload-skill-file">选择 MD 文件</label>
+                  <input type="file" id="upload-skill-file" accept=".md" required>
+                  <span class="field-hint">选择文件后自动解析名称和摘要</span>
+                </div>
+              </form>
+            </div>
+            <div class="panel">
+              <h3 class="panel-title">我的技能</h3>
+              <div id="my-skill-list" class="my-skill-list"></div>
+              <div id="my-skill-empty" class="empty-state">
+                <p>还没有上传技能</p>
+              </div>
+            </div>
+            <div id="skill-detail-panel" class="panel hidden">
+              <div class="skill-detail-header">
+                <h3 class="panel-title" id="skill-detail-title">技能详情</h3>
+                <div class="skill-detail-actions">
+                  <button class="btn btn-outline btn-sm" id="btn-edit-skill-detail">编辑</button>
+                  <button class="btn btn-ghost btn-sm" id="btn-close-skill-detail">关闭</button>
+                </div>
+              </div>
+              <div id="skill-detail-summary" class="skill-detail-summary"></div>
+              <div id="skill-detail-content" class="skill-detail-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-compact">
+          <div class="status-row">
+            <span class="status-label">Skill 服务状态</span>
+            <button id="btn-skill-health" class="btn btn-outline btn-sm">检查</button>
+          </div>
+          <div id="skill-health-result" class="msg hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-mcp" class="view">
+      <div class="content-wrapper">
+        <div class="view-header">
+          <button class="btn-back" id="btn-back-mcp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回
+          </button>
+          <h2>MCP 市场</h2>
+        </div>
+
+        <div class="mcp-search-bar">
+          <form id="form-mcp-search" class="mcp-search-form">
+            <div class="field-row">
+              <div class="field">
+                <input type="text" id="mcp-query" placeholder="搜索 MCP 服务名称或关键词...">
+              </div>
+              <button type="submit" class="btn btn-primary" id="btn-mcp-search">搜索</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel-title">MCP 服务</h3>
+          <div id="mcp-result" class="mcp-results hidden"></div>
+          <div id="mcp-empty" class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <p>输入关键词并点击搜索</p>
+          </div>
+        </div>
+
+        <div id="mcp-detail-panel" class="panel hidden">
+          <div class="skill-detail-header">
+            <h3 class="panel-title" id="mcp-detail-title">服务详情</h3>
+            <button class="btn btn-ghost btn-sm" id="btn-close-mcp-detail">关闭</button>
+          </div>
+          <div id="mcp-detail-desc" class="skill-detail-summary"></div>
+          <div id="mcp-detail-endpoints" class="mcp-endpoints"></div>
+        </div>
+
+        <div class="panel panel-compact">
+          <div class="status-row">
+            <span class="status-label">MCP 服务状态</span>
+            <button id="btn-mcp-health" class="btn btn-outline btn-sm">检查</button>
+          </div>
+          <div id="mcp-health-result" class="msg hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="skill-edit-modal" class="modal hidden">
+    <div class="modal-overlay" id="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>编辑技能</h3>
+        <button class="btn btn-ghost btn-sm" id="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-skill-id">
+        <div class="field">
+          <label for="edit-skill-name">技能名称</label>
+          <input type="text" id="edit-skill-name" placeholder="技能名称">
+        </div>
+        <div class="field">
+          <label for="edit-skill-summary">摘要</label>
+          <textarea id="edit-skill-summary" rows="4" placeholder="技能摘要..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-cancel-modal">取消</button>
+        <button class="btn btn-primary" id="btn-save-skill-edit">保存</button>
+      </div>
+      <div id="edit-skill-msg" class="msg hidden" style="margin: 0 var(--space-4) var(--space-4);"></div>
+    </div>
+  </div>
+
+  <!-- 通用确认弹窗 -->
+  <div class="modal-overlay hidden" id="modal-confirm">
+    <div class="modal-box">
+      <div class="modal-title" id="modal-confirm-title">确认操作</div>
+      <div class="modal-message" id="modal-confirm-message"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modal-confirm-cancel">取消</button>
+        <button class="btn btn-danger" id="modal-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/js/utils.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/rag.js"></script>
+  <script src="/static/js/agent.js"></script>
+  <script src="/static/js/skill.js"></script>
+  <script src="/static/js/mcp.js"></script>
+  <script src="/static/js/init.js"></script>
+</body>
+</html>
