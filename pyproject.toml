@@ -15,7 +15,7 @@ dependencies = [
     "llama-index-embeddings-openai-like>=0.3.1",
     "llama-index-llms-openai-like>=0.7.2",
     "passlib==1.7.4",
-    "psycopg[binary]>=3.3.5",
+    "psycopg[binary,pool]>=3.3.5",
     "pydantic-settings>=2.15.0",
     "pymysql>=1.2.0",
     "python-dotenv>=1.0.0",
@@ -26,4 +26,9 @@ dependencies = [
     "ragas>=0.4.3",
     "chromadb>=1.5.9",
     "langchain-chroma>=1.1.0",
+    "markitdown>=0.0.1",
+    "easyocr>=1.7.0",
+    "faster-whisper>=1.1.0",
+    "pillow>=10.0.0",
+    "mem0ai[pgvector]>=2.0.20",
 ]

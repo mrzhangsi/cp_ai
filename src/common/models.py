@@ -136,12 +136,14 @@ class ChatMessage(BaseModel):
     """Agent 单条消息模型。
 
     Attributes:
+        id: 消息 ID（数据库主键，用于 cursor 追踪）。
         role: 消息角色（user/assistant/system/tool）。
         content: 消息内容。
         timestamp: 消息时间戳。
         metadata: 附加元数据。
     """
 
+    id: Optional[int] = Field(None, description="消息 ID")
     role: str = Field(..., description="消息角色")
     content: str = Field(..., description="消息内容")
     timestamp: Optional[str] = Field(None, description="消息时间戳")
@@ -154,12 +156,14 @@ class ChatRequest(BaseModel):
     Attributes:
         session_id: 会话 ID。
         message: 用户消息。
-        skill_id: 附带的技能 ID（可选），内容作为 system prompt。
+        skill_id: 附带的技能 ID（可选）。
+        remember: 是否将对话存入长期记忆（默认 True）。
     """
 
     session_id: str = Field(..., description="会话 ID")
     message: str = Field(..., min_length=1, description="用户消息")
     skill_id: Optional[int] = Field(None, description="附带的技能 ID")
+    remember: bool = Field(True, description="是否存入长期记忆")
 
 
 class ChatResponse(BaseModel):

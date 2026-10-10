@@ -3,12 +3,14 @@
 定义 Agent 相关接口，前缀为 /agent。
 所有接口需要 JWT 认证。
 """
+import json
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from src.common.config import settings
 from src.common.models import (
     ChatMessage,
     ChatRequest,
@@ -40,6 +42,32 @@ def init_service(service: AgentService) -> None:
     _service = service
 
 
+async def _validate_files(files: List[UploadFile]) -> None:
+    """校验上传文件大小。
+
+    Args:
+        files: 上传文件列表。
+
+    Raises:
+        HTTPException: 文件超出大小限制时抛出 413。
+    """
+    from fastapi import HTTPException
+    total = 0
+    for f in files:
+        size = f.size or 0
+        if size > settings.agent_max_file_size:
+            raise HTTPException(
+                status_code=413,
+                detail=f"文件 {f.filename} 超出大小限制（最大 {settings.agent_max_file_size // 1024 // 1024}MB）",
+            )
+        total += size
+    if total > settings.agent_max_total_files:
+        raise HTTPException(
+            status_code=413,
+            detail=f"文件总大小超出限制（最大 {settings.agent_max_total_files // 1024 // 1024}MB）",
+        )
+
+
 @router.post("/chat", response_model=ChatResponse)
 def chat_api(
     req: ChatRequest,
@@ -64,27 +92,47 @@ def chat_api(
         message=req.message,
         user_id=current_user.id,
         skill_id=req.skill_id,
+        remember=req.remember,
     )
 
 
 @router.post("/chat/stream")
 async def chat_stream_api(
-    req: ChatRequest,
+    message: str = Form(...),
+    session_id: str = Form(...),
+    skill_id: Optional[str] = Form(None),
+    remember: str = Form("true"),
+    files: Optional[List[UploadFile]] = File(None),
     current_user=Depends(get_current_user),
     _blacklist_check: str = Depends(check_token_blacklist),
 ):
     """流式对话接口。
 
+    支持 multipart/form-data 格式，可同时上传文件。
     返回 SSE 事件流，支持 token 级别流式输出和工具调用状态。
     事件类型：token（流式文本）、tool_start（工具调用开始）、
     tool_end（工具调用结束）、done（流结束）。
     """
+    skill_id_int = int(skill_id) if skill_id and skill_id.isdigit() else None
+    remember_bool = remember.lower() in ("true", "1", "yes")
+
+    file_data = []
+    if files:
+        valid_files = [f for f in files if f.filename]
+        if valid_files:
+            await _validate_files(valid_files)
+            for f in valid_files:
+                content = await f.read()
+                file_data.append((content, f.filename))
+
     return StreamingResponse(
         _service.chat_stream(
-            req.session_id,
-            req.message,
+            session_id,
+            message,
             user_id=current_user.id,
-            skill_id=req.skill_id,
+            skill_id=skill_id_int,
+            files=file_data if file_data else None,
+            remember=remember_bool,
         ),
         media_type="text/event-stream",
         headers={

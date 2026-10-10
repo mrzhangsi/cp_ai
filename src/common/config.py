@@ -30,6 +30,7 @@ class Settings(BaseSettings):
         embedding_model_name: Embedding 模型名称。
         embedding_model_api_base: Embedding API 基础 URL。
         embedding_model_api_key: Embedding API 密钥。
+        embedding_dimensions: Embedding 向量维度。
         embedding_batch_size: Embedding 批处理大小。
         default_top_k: 默认返回最相似结果数量。
         storage_dir: 索引持久化存储目录。
@@ -39,6 +40,11 @@ class Settings(BaseSettings):
         agent_llm_supports_vision: Agent 是否支持视觉。
         agent_session_storage: Agent 会话存储目录。
         agent_system_prompt: Agent 系统提示词。
+        agent_memory_enabled: 是否启用长期记忆（mem0）。
+        agent_memory_top_k: mem0 搜索返回的最大记忆条数。
+        agent_memory_window_size: 滑动窗口大小（保留最近 N 条消息）。
+        agent_memory_summary_threshold: 触发摘要压缩的消息数量阈值。
+        agent_memory_token_limit: 触发摘要压缩的 token 数量阈值。
     """
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -54,6 +60,11 @@ class Settings(BaseSettings):
 
     # PostgreSQL 数据库（使用 psycopg3 驱动）
     postgres_url: str = "postgresql+psycopg://postgres:123456@localhost:5432/postgres"
+    pgvector_host: str = "localhost"
+    pgvector_port: int = 5432
+    pgvector_dbname: str = "postgres"
+    pgvector_user: str = "postgres"
+    pgvector_password: str = "123456"
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
@@ -75,6 +86,7 @@ class Settings(BaseSettings):
     embedding_model_name: str = ""
     embedding_model_api_base: str = "https://youzi.today/v1"
     embedding_model_api_key: str = ""
+    embedding_dimensions: int = 1024
     embedding_batch_size: int = 10
 
     # 索引与查询配置
@@ -87,6 +99,11 @@ class Settings(BaseSettings):
     agent_llm_base_url: str = "https://youzi.today/v1"
     agent_llm_supports_vision: bool = False
 
+    # Agent 多模态配置
+    agent_whisper_model_path: str = "./faster-whisper-tiny"
+    agent_max_file_size: int = 20 * 1024 * 1024  # 单文件 20MB
+    agent_max_total_files: int = 50 * 1024 * 1024  # 总上传 50MB
+
     # Agent 会话配置
     agent_session_storage: str = "./agent_sessions"
     agent_system_prompt: str = "你是一个有用的AI助手。"
@@ -96,8 +113,19 @@ class Settings(BaseSettings):
     skillsmp_api_key: str = ""
     skill_storage_dir: str = "./user_skills"
 
+    # Agent 记忆管理配置（mem0 长期记忆）
+    agent_memory_enabled: bool = True
+    agent_memory_top_k: int = 5
+    agent_memory_window_size: int = 5
+    agent_memory_summary_threshold: int = 20
+    agent_memory_token_limit: int = 100_000
+
+    # Agent Trace 配置
+    agent_trace_enabled: bool = True
+
     # MCP 配置
     modelscope_api_token: str = ""
+    modelscope_api_key: str = ""
 
     # ChromaDB 配置
     chroma_persist_dir: str = "./chroma_storage"

@@ -1,10 +1,11 @@
 /**
  * CP_AI — Agent Module
- * 会话管理 + 流式聊天 + 技能选择
+ * 会话管理 + 流式聊天 + 技能选择 + 多模态文件上传
  */
 
 agentState.currentSkillId = null;
 agentState.mySkills = [];
+agentState.pendingFiles = [];
 
 async function loadAgentSessions() {
     try {
@@ -57,6 +58,7 @@ async function selectAgentSession(sessionId) {
     renderSessionList();
     await loadChatHistory(sessionId);
     restoreSessionSkill(sessionId);
+    clearPendingFiles();
 }
 
 function restoreSessionSkill(sessionId) {
@@ -128,7 +130,7 @@ async function loadChatHistory(sessionId) {
         clearChatMessages();
         messages.forEach(msg => {
             if (msg.role !== 'system') {
-                appendChatMessage(msg.role, msg.content);
+                appendChatMessage(msg.role, msg.content, msg.metadata);
             }
         });
     } catch (err) {
@@ -141,19 +143,81 @@ function clearChatMessages() {
     if (container) container.innerHTML = '';
 }
 
+// ============================================
+// 文件上传处理
+// ============================================
+
+function addPendingFiles(files) {
+    for (const file of files) {
+        const MAX_SIZE = 20 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            alert(`文件 ${file.name} 超出 20MB 限制`);
+            continue;
+        }
+        agentState.pendingFiles.push(file);
+    }
+    renderAttachmentBar();
+}
+
+function removePendingFile(index) {
+    agentState.pendingFiles.splice(index, 1);
+    renderAttachmentBar();
+}
+
+function clearPendingFiles() {
+    agentState.pendingFiles = [];
+    renderAttachmentBar();
+    const input = document.getElementById('chat-file-input');
+    if (input) input.value = '';
+}
+
+function renderAttachmentBar() {
+    const bar = document.getElementById('chat-attachment-bar');
+    if (!bar) return;
+    bar.innerHTML = agentState.pendingFiles.map((file, i) => {
+        const isImage = file.type.startsWith('image/');
+        const thumb = isImage
+            ? `<img src="${URL.createObjectURL(file)}" alt="">`
+            : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
+        return `
+        <div class="chat-attachment-item">
+            ${thumb}
+            <span class="chat-attachment-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+            <span class="chat-attachment-remove" onclick="removePendingFile(${i})">✕</span>
+        </div>`;
+    }).join('');
+}
+
+function renderAttachmentPreview(attachments) {
+    if (!attachments || attachments.length === 0) return '';
+    const items = attachments.map(a => {
+        const icon = a.type === 'image' ? '🖼️' : a.type === 'audio' ? '🔊' : '📄';
+        return `<span class="message-attachment"><span class="message-attachment-name">${icon} ${escapeHtml(a.name)}</span></span>`;
+    }).join('');
+    return `<div class="message-attachments">${items}</div>`;
+}
+
+// ============================================
+// 消息渲染
+// ============================================
+
 /**
  * 向聊天容器追加一条消息
  * @param {'user'|'assistant'} role
  * @param {string} content
+ * @param {object|null} metadata
  * @returns {HTMLDivElement|undefined}
  */
-function appendChatMessage(role, content) {
+function appendChatMessage(role, content, metadata) {
     const container = document.getElementById('chat-messages');
     if (!container) return;
     const div = document.createElement('div');
     div.className = `chat-message ${role}`;
+    const attachHtml = (role === 'user' && metadata?.attachments)
+        ? renderAttachmentPreview(metadata.attachments) : '';
     div.innerHTML = `
         <div class="message-label">${role === 'user' ? '你' : '助手'}</div>
+        ${attachHtml}
         <div class="message-bubble">${escapeHtml(content)}</div>
     `;
     container.appendChild(div);
@@ -175,16 +239,34 @@ function createStreamingBubble() {
     return div;
 }
 
+// ============================================
+// 发送消息（支持文件上传）
+// ============================================
+
 async function sendAgentMessage() {
     const input = document.getElementById('chat-input');
     const message = input.value.trim();
-    if (!message) return;
+    const hasFiles = agentState.pendingFiles.length > 0;
+    if (!message && !hasFiles) return;
 
     if (!agentState.currentSession) {
         await createAgentSession();
     }
 
-    appendChatMessage('user', message);
+    const filesToSend = [...agentState.pendingFiles];
+    clearPendingFiles();
+
+    // 渲染用户消息
+    if (hasFiles) {
+        const attachments = filesToSend.map(f => {
+            const isImage = f.type.startsWith('image/');
+            return { name: f.name, type: isImage ? 'image' : 'document', size: f.size };
+        });
+        appendChatMessage('user', message || '(已上传 ' + filesToSend.length + ' 个文件)', { attachments });
+    } else {
+        appendChatMessage('user', message);
+    }
+
     input.value = '';
     input.style.height = 'auto';
 
@@ -198,22 +280,38 @@ async function sendAgentMessage() {
     btnSend.textContent = '生成中...';
 
     try {
-        const body = {
-            session_id: agentState.currentSession,
-            message: message,
-        };
-        if (agentState.currentSkillId) {
-            body.skill_id = agentState.currentSkillId;
+        let res;
+        const remember = document.getElementById('chat-remember')?.checked !== false;
+        if (hasFiles) {
+            const formData = new FormData();
+            formData.append('session_id', agentState.currentSession);
+            formData.append('message', message || '');
+            formData.append('remember', remember);
+            if (agentState.currentSkillId) {
+                formData.append('skill_id', agentState.currentSkillId);
+            }
+            for (const file of filesToSend) {
+                formData.append('files', file);
+            }
+            res = await fetch(API + '/agent/chat/stream', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + state.accessToken },
+                body: formData,
+            });
+        } else {
+            const formData = new FormData();
+            formData.append('session_id', agentState.currentSession);
+            formData.append('message', message);
+            formData.append('remember', remember);
+            if (agentState.currentSkillId) {
+                formData.append('skill_id', agentState.currentSkillId);
+            }
+            res = await fetch(API + '/agent/chat/stream', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + state.accessToken },
+                body: formData,
+            });
         }
-
-        const res = await fetch(API + '/agent/chat/stream', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + state.accessToken,
-            },
-            body: JSON.stringify(body),
-        });
 
         if (!res.ok) {
             const data = await res.json();
@@ -273,8 +371,19 @@ async function sendAgentMessage() {
     }
 }
 
+// ============================================
+// 事件绑定
+// ============================================
+
 document.getElementById('btn-send')?.addEventListener('click', sendAgentMessage);
 document.getElementById('btn-new-session')?.addEventListener('click', createAgentSession);
+
+document.getElementById('chat-file-input')?.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        addPendingFiles(this.files);
+    }
+    this.value = '';
+});
 
 document.getElementById('chat-skill-select')?.addEventListener('change', function() {
     const skillId = this.value ? parseInt(this.value) : null;

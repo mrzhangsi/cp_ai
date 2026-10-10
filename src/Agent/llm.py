@@ -43,5 +43,6 @@ def create_llm(
         api_key=key,
         base_url=url,
         streaming=True,
+        stream_usage=True,
         **kwargs,
     )

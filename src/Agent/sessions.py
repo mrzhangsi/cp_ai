@@ -6,7 +6,7 @@
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -188,8 +188,8 @@ class SessionManager:
                     "session_id": s.session_id,
                     "title": s.title,
                     "skill_id": s.skill_id,
-                    "created_at": s.created_at,
-                    "updated_at": s.updated_at,
+                    "created_at": s.created_at.isoformat(),
+                    "updated_at": s.updated_at.isoformat(),
                     "message_count": s.message_count,
                 }
                 for s in result
@@ -226,14 +226,17 @@ class SessionManager:
         if self._cache:
             self._cache.invalidate(session_id, user_id=user_id)
 
-    def add_message(self, session_id: str, message: ChatMessage) -> None:
+    def add_message(self, session_id: str, message: ChatMessage) -> int:
         """添加消息到会话。
 
-        同时更新 Redis 缓存。
+        同时更新 Redis 缓存，写入后使消息缓存失效。
 
         Args:
             session_id: 会话 ID。
             message: 消息对象。
+
+        Returns:
+            新消息的数据库 ID。
 
         Raises:
             KeyError: 会话不存在时抛出。
@@ -257,19 +260,16 @@ class SessionManager:
             metadata_json=metadata_json,
         )
         self._pg_db.add(msg)
+        self._pg_db.flush()
 
         session.updated_at = datetime.now(timezone.utc)
         self._pg_db.commit()
 
         if self._cache:
-            msg_dict = {
-                "role": message.role,
-                "content": message.content,
-                "timestamp": msg.created_at.isoformat() if msg.created_at else None,
-                "metadata": message.metadata,
-            }
-            self._cache.append_message(session_id, msg_dict, ttl=self._cache_ttl)
+            self._cache.invalidate_messages(session_id)
             self._cache.invalidate_session_list(session.user_id)
+
+        return msg.id
 
     def get_messages(self, session_id: str) -> List[ChatMessage]:
         """获取会话消息历史。
@@ -290,6 +290,7 @@ class SessionManager:
             if cached is not None:
                 return [
                     ChatMessage(
+                        id=m.get("id"),
                         role=m["role"],
                         content=m["content"],
                         timestamp=m.get("timestamp"),
@@ -323,6 +324,7 @@ class SessionManager:
                 except (json.JSONDecodeError, TypeError):
                     pass
             chat_msg = ChatMessage(
+                id=msg.id,
                 role=msg.role,
                 content=msg.content,
                 timestamp=msg.created_at.isoformat() if msg.created_at else None,
@@ -330,6 +332,7 @@ class SessionManager:
             )
             result.append(chat_msg)
             cache_data.append({
+                "id": msg.id,
                 "role": msg.role,
                 "content": msg.content,
                 "timestamp": msg.created_at.isoformat() if msg.created_at else None,

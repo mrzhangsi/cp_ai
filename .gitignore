@@ -16,3 +16,9 @@ skills/
 chroma_storage/
 logs/
 data/
+docs/
+test*
+TODO
+temp/
+faster-whisper-tiny/
+postgresql_test.py

@@ -89,6 +89,12 @@ class PostgreSQLDatabase:
 
             from .models import AgentMessage, AgentSession, RAGDocument, UserSkill
             Base.metadata.create_all(bind=self.engine)
+
+            # 启用 pgvector 扩展（mem0 需要）
+            with self.engine.connect() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                conn.commit()
+
             self._migrate_columns(self.engine)
 
             logger.info("PostgreSQL 连接已建立，表已自动创建/补列")
